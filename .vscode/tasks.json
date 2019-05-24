@@ -8,7 +8,7 @@
             "args": [
                 "run",
                 "python",
-                "'${workspaceFolder}/app.py'"
+                "'${workspaceFolder}/run.py'"
             ],
             "group": {
                 "kind": "test",
