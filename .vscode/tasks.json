@@ -2,13 +2,13 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Run Python Code",
+            "label": "Run Server",
             "type": "shell",
             "command": "pipenv",
             "args": [
                 "run",
                 "python",
-                "'${workspaceFolder}/run.py'"
+                "'${workspaceFolder}/run_server.py'"
             ],
             "group": {
                 "kind": "test",

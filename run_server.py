@@ -1,4 +1,4 @@
-from server import app, socketio
+from data_marketplace.server.api import app, socketio
 app.config.from_object('config.dev')
 
 if __name__ == '__main__':
