@@ -1,6 +1,7 @@
 from Crypto.Cipher import AES
 from Crypto import Random
-from data_marketplace.utils.threading import DMthread
+from data_marketplace.utils.thread import DMthread
+from data_marketplace.utils.common import to_byte
 
 def encrypt(key, msg):
    k = to_byte(key)
@@ -17,13 +18,6 @@ def decrypt(key, msg):
    cipher = AES.new(k, AES.MODE_CFB, iv)
    plain = cipher.decrypt(m[AES.block_size:])
    return plain
-
-def to_byte(string):
-   try:
-      b = string.encode('utf-8')
-   except AttributeError:
-      b = string
-   return b
 
 
 if __name__ == "__main__":

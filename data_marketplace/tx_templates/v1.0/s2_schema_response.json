@@ -1,0 +1,11 @@
+{
+    "Appication Name": "NetDB_Data_Marketplace",
+    "Data Marketplace Version": "v1.0",
+    "Transaction Type": "Schema Response",
+    "Contents": {
+        "Be_Authorized": "NetDB",
+        "Send_Address": "SRDFSAHDPDKMMIUSELLLZ9VNTEZLGNQRTSVSTFVUFGNLZNNGHSOQWUATXJRPCR9VLQHEPOSYKR9YGNGLBYYVODSYEX",
+        "Validate_Schema": {},
+        "Data_Schema_Hash": "z4lsd7bb0u2ppjy769bc84cbtp1a4v8osrg6y85onoi4gqs6eg8oah3utvgvape3"
+    }
+}
