@@ -11,12 +11,15 @@ class Data_Resgistration(ClientNamespace):
       
    def on_connect(self):
       log.info('%s - Connected', self.classname)
-      super().emit('upload', {'data':'HelloWorld'})
+      super().emit('upload', {'data':'Hello World'})
 
    def on_disconnect(self):
       log.info('%s - Disconnected', self.classname)
 
    def on_response(self, message):
       log.info('Recevied Response: %s', message['data'])
+
+   def on_tx_confirm_response(self, message):
+      log.info('Recevied Response: %s', message)
 
 client.sio.register_namespace(Data_Resgistration('/data-registration'))

@@ -1,11 +1,13 @@
-import os
 import sys
+import os
 import base64
 import json
 from importlib import import_module as im
-from iota import Iota, TryteString, Address, Tag, ProposedTransaction
-from data_marketplace.utils.common import import_template, print_json
+from iota import TryteString, Address, Tag, ProposedTransaction
+from data_marketplace.crypto.hash import _hash
+from data_marketplace.utils.common import import_template, read_file_byte
 from data_marketplace.utils.log import logging
+from data_marketplace.utils.iota import connect_iota
 from data_marketplace.utils.thread import DMthread
 
 log = logging.getLogger('data_marketplace.client.api')
@@ -16,10 +18,12 @@ class DataMarketplaceClient():
       self.cfg = config
       self.sio = sio
       self.send = dict()
+      self.hash_algo = self.cfg['Data_Marketplace']['hash']
 
    def run(self):
       try:
-         self.iota = self.connect_iota()
+         self.iota = connect_iota(eval(self.cfg['IOTA']['node']),
+                                  self.cfg['IOTA']['seed'])
       except ConnectionError:
          log.error('No Available IOTA node.'\
                    'Please check the configuration again.'\
@@ -38,7 +42,8 @@ class DataMarketplaceClient():
    def registry(self, data_path, response_json, price, expired_date):
       # Update variable
       self.send = dict()
-      self.send.update({'Owner':self._hash(self.cfg['Data_Marketplace']['client_id']).hexdigest(),
+      self.send.update({'Owner':_hash(self.cfg['Data_Marketplace']['client_id'],\
+                                      self.hash_algo).hexdigest(),
                         'Price':price,
                         'Expired_Date':expired_date})
 
@@ -51,9 +56,11 @@ class DataMarketplaceClient():
 
       # Encryption of file
       try:
-         encrypted, encrypted_path, data_hash = self.encrypt(data_path)
+         encrypted, encrypted_hash, encrypted_path, data_hash = \
+                                                  self.encrypt(data_path)
          log.info('Encrypted Data store in : %s', encrypted_path)
          self.send.update({'Data_Hash':data_hash.hexdigest()})
+         self.send.update({'Encrypted_Hash':encrypted_hash.hexdigest()})
       except FileNotFoundError:
          log.error('Encryption Failure.' \
                    'File Not Found.' \
@@ -62,7 +69,7 @@ class DataMarketplaceClient():
   
       # Calculate the contents hash
       try:
-         contents_hash = self._hash(str(self.get_contents('s3_certificate')))
+         contents_hash = _hash(str(self.get_contents('s3_certificate')), self.hash_algo)
          self.send.update({'Contents_Hash':contents_hash.hexdigest()})
       except KeyError:
          log.error('Missing Data in Contents.' \
@@ -86,7 +93,12 @@ class DataMarketplaceClient():
          log.error('Send Transaction Error.', exc_info=True)
          return
 
-      namespace.emit('tx_confirm', {'txhash': tx_hash, 'data': encrypted})
+      # Send Confirmation Request to Server
+      dmt = DMthread()
+      pub_key = read_file_byte(self.cfg['Asymmetric']['public_key'])
+      self.send.update({'tx_hash': tx_hash, 'public_key': pub_key, 'data': encrypted})
+      send_dict = self.get_contents('s4_tx_confirm', contents_only=False)
+      dmt.run(namespace.emit, 'tx_confirm', send_dict) 
 
    def validate(self, file_path, schema_json):
       return True
@@ -105,22 +117,13 @@ class DataMarketplaceClient():
       # Read File
       with open(file_path, 'rb') as f:
          contents = f.read()
+      digest = dmt.run(_hash, contents, self.hash_algo)
+
       # Encryption
       encrypted = dmt.run(encrypt_func, key, contents)
-      digest = dmt.run(self._hash, contents)
-      encrypted_path = self._write_encrypted(encrypted, digest)
-      return encrypted, encrypted_path, digest
-
-   def _hash(self, file):
-      hash_algo = self.cfg['Data_Marketplace']['hash']
-      get_digest = im('data_marketplace.crypto.'+hash_algo).get_digest
-      log.info("Hashing the file.\n\
-                File object: %s,\n\
-                Hash function: %s"
-               , id(file), hash_algo)
-
-      digest = get_digest(file)
-      return digest
+      encrypted_hash = dmt.run(_hash, encrypted, self.hash_algo)
+      encrypted_path = self._write_encrypted(encrypted, encrypted_hash)
+      return encrypted, encrypted_hash, encrypted_path, digest
 
    def _write_encrypted(self, encrypted, digest):
       path = self.cfg['Data_Marketplace']['encrypt_path']
@@ -180,33 +183,6 @@ class DataMarketplaceClient():
       signature = sign_func(priv_key_path, digest)
       return signature
 
-   def connect_iota(self):
-      nodes = eval(self.cfg['IOTA']['node'])
-      seed = self.cfg['IOTA']['seed']
-      log.info('Connecting IOTA network. IOTA full node list: %s', nodes)
-      connected = False
-      times = 1
-      node = nodes.pop()
-      while not connected:
-         try:
-            log.info('Trying to connecting IOTA node. Node address: "%s" Times: %d',
-                     node, times)
-            iota = Iota(node, seed)
-            info = iota.get_node_info()
-            connected = True
-            log.info('Success Connected to IOTA node. Node address: "%s"\n'\
-                     'Node Information:\n %s', node, print_json(info))
-         except:
-            if times < 3:
-               times += 1
-            else:
-               try:
-                  node = nodes.pop()
-               except IndexError:
-                  raise ConnectionError
-            log.error('IOTA Connection Error. Retry Again.', exc_info=True)
-      return iota
-
    def send_tx(self, template_name, address):
       log.info('Start sending transaction to IOTA networtk.')
 
@@ -231,7 +207,7 @@ class DataMarketplaceClient():
       # Send Transfer
       dmt = DMthread()
       result = dmt.run(self.iota.send_transfer, [tx, tx_sig])
-      return str(result['bundle'].hash)
+      return str(result['bundle'].transactions[0].hash)
 
    def shutdown(self):
       self.sio.disconnect()

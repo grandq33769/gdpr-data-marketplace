@@ -8,6 +8,15 @@ def to_byte(string):
       b = string
    return b
 
+def read_file_byte(path):
+   with open(path, 'rb') as f:
+      read = f.read()
+   return read
+
+def write_file_byte(path, data):
+   with open(path, 'wb') as f:
+      f.write(data)
+
 def read_json(path):
    with open(path, 'r') as f:
       jf = json.loads(f.read())
