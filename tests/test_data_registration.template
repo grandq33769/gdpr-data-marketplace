@@ -1,0 +1,18 @@
+from data_marketplace.utils.common import read_json
+from data_marketplace.client.api import client
+
+def test_aes{sym_len}_rsa{rsa_len}_s{size}(benchmark):
+   client.cfg.set('Symmetric', 'key', '{sym}')
+   client.cfg.set('Asymmetric', 'public_key', '{pub_key_path}')
+   client.cfg.set('Asymmetric', 'private_key', '{priv_key_path}')
+   response = read_json(
+       './data_marketplace/tx_templates/v1.0/s2_schema_response.json')
+   params = (
+       '{fpath}', \
+       response, \
+       10, \
+       '2019-06-17'
+   )
+   client.run()
+   benchmark.pedantic(client.registry, args=params, iterations=1, rounds={rounds})
+   client.shutdown()

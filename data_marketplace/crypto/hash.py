@@ -1,21 +1,20 @@
 from importlib import import_module as im
+from data_marketplace.utils.common import to_byte
 from data_marketplace.utils.log import logging
 
 log = logging.getLogger('data_marketplace.crypto.hash')
 
 def _hash(contents, hash_algo):
-   get_digest = _choose(hash_algo)
    log.info(
        "Hashing the file.\n\
         Hash object: %s,\n\
         Hash function: %s", id(contents), hash_algo)
 
-   digest = get_digest(contents)
-   return digest
+   return _get_digest(contents, hash_algo)
 
 def _validate(origin, target, hash_algo):
-   get_digest = _choose(hash_algo)
-   calculated = get_digest(origin).hexdigest()
+   digest = _get_digest(origin, hash_algo)
+   calculated = digest.hexdigest()
    log.info('Calculated Hash: %s\n'
             'Target Hash: %s', calculated, target)
    if calculated == target:
@@ -23,5 +22,7 @@ def _validate(origin, target, hash_algo):
    else:
       return False
 
-def _choose(hash_algo):
-   return im('data_marketplace.crypto.' + hash_algo).get_digest
+def _get_digest(contents, hash_algo):
+   module_name = hash_algo.upper() 
+   contents_byte = to_byte(contents)
+   return im('Crypto.Hash.' + module_name).new(contents_byte)

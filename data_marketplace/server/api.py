@@ -43,8 +43,10 @@ class Data_Registration(Namespace):
                'Signature: %s\n', print_json(msg), print_json(sig))
 
       # Write File
+      write_path = os.path.join(app.base_path, app.config['STORAGE_PATH'])
+      print(write_path)
       encrypted_path, key_path = dmt.run(_write_tx_confirm,
-                                         app.config['STORAGE_PATH'],
+                                         write_path,
                                          data, msg)
 
       # Validation of contents hash

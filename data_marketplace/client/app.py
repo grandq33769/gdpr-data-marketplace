@@ -2,6 +2,7 @@ import sys
 import os
 import base64
 import json
+import time
 from importlib import import_module as im
 from iota import TryteString, Address, Tag, ProposedTransaction
 from data_marketplace.crypto.hash import _hash
@@ -19,6 +20,7 @@ class DataMarketplaceClient():
       self.sio = sio
       self.send = dict()
       self.hash_algo = self.cfg['Data_Marketplace']['hash']
+      self.dr_confirm = set()
 
    def run(self):
       try:
@@ -31,10 +33,10 @@ class DataMarketplaceClient():
          self.shutdown()
       try:
          self.sio.connect(self.cfg['Data_Marketplace']['host'])
-         log.info("Success to connect Data Marketplace Server at %s", 
+         log.info("Success to connect Data Marketplace Server at %s.", 
                   self.cfg['Data_Marketplace']['host'])
       except:
-         log.error('Failed to connect Data Marketplace Server'\
+         log.error('Failed to connect Data Marketplace Server. '\
                    'Please check the configuration again.'\
                    'Terminate Process.', exc_info=True)
          self.shutdown()
@@ -51,7 +53,7 @@ class DataMarketplaceClient():
       # TODO: Validation
       if not self.validate(data_path, None):
          log.error('Validation failed in Data registration.')
-         return
+         return False
       namespace = self.sio.namespace_handlers['/data-registration']
 
       # Encryption of file
@@ -65,7 +67,7 @@ class DataMarketplaceClient():
          log.error('Encryption Failure.' \
                    'File Not Found.' \
                    'Data Registration Terminated.', exc_info=True)
-         return
+         return False
   
       # Calculate the contents hash
       try:
@@ -75,7 +77,7 @@ class DataMarketplaceClient():
          log.error('Missing Data in Contents.' \
                    'Please confirm the completness of Contents.' \
                    'Data Registration Terminated.', exc_info=True)
-         return
+         return False
 
       # Calculate the Signature of Hash
       try:
@@ -84,21 +86,25 @@ class DataMarketplaceClient():
          self.send.update({'Signature': sign_str})
       except:
          log.error('Signing Error.', exc_info=True)
-         return
+         return False
 
       # Send Transaction to IOTA network
       try:
          tx_hash = self.send_tx('s3_certificate', self.send['Send_Address'])
       except:
          log.error('Send Transaction Error.', exc_info=True)
-         return
+         return False
 
       # Send Confirmation Request to Server
       dmt = DMthread()
       pub_key = read_file_byte(self.cfg['Asymmetric']['public_key'])
       self.send.update({'tx_hash': tx_hash, 'public_key': pub_key, 'data': encrypted})
       send_dict = self.get_contents('s4_tx_confirm', contents_only=False)
-      dmt.run(namespace.emit, 'tx_confirm', send_dict) 
+      dmt.run(namespace.emit, 'tx_confirm', send_dict)
+
+      result = dmt.run(self.wait_tx_confirm, tx_hash)
+
+      return result
 
    def validate(self, file_path, schema_json):
       return True
@@ -195,7 +201,7 @@ class DataMarketplaceClient():
       msg = TryteString.from_unicode(json.dumps(msg))
 
       # Convert Signature to Trytes
-      sig = self.get_contents('Signature', contents_only=False)
+      sig = self.get_contents('signature', contents_only=False)
       sig = TryteString.from_unicode(json.dumps(sig))
 
       # Transaction Formation
@@ -208,7 +214,22 @@ class DataMarketplaceClient():
       dmt = DMthread()
       result = dmt.run(self.iota.send_transfer, [tx, tx_sig])
       return str(result['bundle'].transactions[0].hash)
+   
+   def wait_tx_confirm(self, tx_hash):
+      timeout = 150
+      now = 0
+      step = 0.1
+      while tx_hash not in self.dr_confirm and now < timeout:
+         time.sleep(step)
+         now += step
+
+      if now > timeout:
+         return False
+      else:
+         return True
+
+   def read_config(self, cfg_path):
+      self.cfg.read(cfg_path)
 
    def shutdown(self):
       self.sio.disconnect()
-      sys.exit()
