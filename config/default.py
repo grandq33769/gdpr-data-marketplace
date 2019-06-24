@@ -7,3 +7,4 @@ STORAGE_PATH = '_file/server'
 SYMMETRIC = 'aes'
 ASYMMETRIC = 'rsa'
 HASH = 'sha256'
+PING_TIMEOUT = 300

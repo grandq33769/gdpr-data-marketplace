@@ -11,6 +11,7 @@ asy_len = (
 )
 size = [s for s in range(0,30,5)]
 size.append(26)
+size.append(27)
 
 products = list(product(sym_keys, asy_len, size))
 

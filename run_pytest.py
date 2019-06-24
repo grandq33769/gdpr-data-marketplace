@@ -3,7 +3,7 @@ import pytest
 arg = '--benchmark-json=./.benchmarks/{}.json'
 
 with open('./expected_test.txt', 'r') as f:
-    test_list = f.read().split('\n')[:-1]
+    test_list = f.read().split('\n')
 
 print(test_list)
 for p in test_list:
