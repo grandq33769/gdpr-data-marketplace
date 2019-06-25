@@ -6,5 +6,6 @@ IOTA_NODE = ["https://nodes.thetangle.org:443"]
 STORAGE_PATH = '_file/server'
 SYMMETRIC = 'aes'
 ASYMMETRIC = 'rsa'
-HASH = 'sha256'
+HASH = 'sha512'
 PING_TIMEOUT = 300
+MAX_SEND_SIZE = 2 ** 40

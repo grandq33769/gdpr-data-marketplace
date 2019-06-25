@@ -216,7 +216,7 @@ class DataMarketplaceClient():
       return str(result['bundle'].transactions[0].hash)
    
    def wait_tx_confirm(self, tx_hash):
-      timeout = 150
+      timeout = self.cfg['Data_Marketplace'].getint('wait_timeout')
       now = 0
       step = 0.1
       while tx_hash not in self.dr_confirm and now < timeout:
