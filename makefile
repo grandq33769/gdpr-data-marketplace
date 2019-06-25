@@ -17,8 +17,14 @@ load-image:
 clean-image:
 	rm data_marketplace.tar
 	sudo docker rmi $(image)
+remove-container:
+	sudo docker stop $(container) && sudo docker rm $(container)
 run-server:
 	sudo docker run -it -d --name=data_marketplace -p 6562:6562 -v $(cd):/root/data_marketplace --entrypoint "python" $(image) /root/data_marketplace/run_server.py
-rerun-image:
-	sudo docker stop $(container) && sudo docker rm $(container)
+rerun-server:
+	make remove-container
 	make run-server
+run-test:
+	sudo docker run -it -d --name=data_marketplace -v $(cd):/root/data_marketplace --entrypoint "python" $(image) /root/data_marketplace/run_pytest.py
+watch-docker-logs:
+	sudo docker logs -f $(container)
