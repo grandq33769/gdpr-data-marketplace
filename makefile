@@ -5,6 +5,8 @@ test:
 	pipenv run python run_pytest.py
 generate_test:
 	pipenv run python ./tests/generate_test.py
+remove-test:
+	rm tests/test_aes*
 build-image:
 	pipenv lock -r > requirements.txt  && pipenv lock -r --dev >> requirements.txt
 	sudo docker build -t data_marketplace:latest .
