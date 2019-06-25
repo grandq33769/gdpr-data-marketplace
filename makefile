@@ -1,4 +1,5 @@
 image = $(shell sudo docker images "data_marketplace*" -q)
+container = $(shell sudo docker ps -aq -f name="data_marketplace")
 cd := $(shell pwd)
 test: 
 	pipenv run python run_pytest.py
@@ -14,5 +15,8 @@ load-image:
 clean-image:
 	rm data_marketplace.tar
 	sudo docker rmi $(image)
-run-image:
-	sudo docker run -it -d --name=data_marketplace -p 6562:6562 -v $(cd):/root/data_marketplace $(image)
+run-server:
+	sudo docker run -it -d --name=data_marketplace -p 6562:6562 -v $(cd):/root/data_marketplace --entrypoint "python" $(image) /root/data_marketplace/run_server.py
+rerun-image:
+	sudo docker stop $(container) && sudo docker rm $(container)
+	make run-server
