@@ -1,3 +1,4 @@
+import time
 import json
 from iota import Iota
 from data_marketplace.utils.log import logging
@@ -40,3 +41,19 @@ def get_tx_ctx(node, tx_hash):
    sig = json.loads(tx_sig.signature_message_fragment.as_string())
 
    return (msg, sig)
+
+def check_tx_confirmed(node, tx_hash):
+   states = node.get_latest_inclusion([tx_hash])['states']
+   return all(states.values())
+
+def wait_tx_confirmed(node, tx_hash, wait_interval, callback):
+   log.info('Start waiting Tx [%s] to be confirmed at timestamp %d',
+            tx_hash, time.time())
+   result = False
+   while not result:
+      result = check_tx_confirmed(node, tx_hash)
+      if result is False:
+         time.sleep(wait_interval)
+         log.info('Still waiting Tx [%s] to be confirmed at timestamp %d',
+                  tx_hash, time.time())
+   callback()

@@ -21,6 +21,8 @@ class DataMarketplaceClient():
       self.send = dict()
       self.hash_algo = self.cfg['Data_Marketplace']['hash']
       self.dr_confirm = set()
+      self.dp_confirm = set()
+      self.pub_key = read_file_byte(self.cfg['Asymmetric']['public_key'])
 
    def run(self):
       try:
@@ -97,12 +99,58 @@ class DataMarketplaceClient():
 
       # Send Confirmation Request to Server
       dmt = DMthread()
-      pub_key = read_file_byte(self.cfg['Asymmetric']['public_key'])
-      self.send.update({'tx_hash': tx_hash, 'public_key': pub_key, 'data': encrypted})
+      self.send.update({'tx_hash': tx_hash, 'public_key': self.pub_key, 'data': encrypted})
       send_dict = self.get_contents('s4_tx_confirm', contents_only=False)
+      self.dr_confirm.clear() 
       dmt.run(namespace.emit, 'tx_confirm', send_dict)
 
-      result = dmt.run(self.wait_tx_confirm, tx_hash)
+      result = dmt.run(self.wait_tx_confirm, tx_hash, self.dr_confirm)
+
+      return result
+
+   def purchase(self, address, bundle, value):
+      # Update variable
+      self.send = dict()
+      self.send.update({'Consumer_ID':_hash(self.cfg['Data_Marketplace']['client_id'],\
+                                      self.hash_algo).hexdigest(),
+                        'Target_Bundle': bundle,
+                        'Value': value})
+      namespace = self.sio.namespace_handlers['/data-purchase']
+      
+      # Calculate the contents hash
+      try:
+         contents_hash = _hash(str(self.get_contents('b1_send_fund')), self.hash_algo)
+         self.send.update({'Contents_Hash':contents_hash.hexdigest()})
+      except KeyError:
+         log.error('Missing Data in Contents.' \
+                   'Please confirm the completness of Contents.' \
+                   'Data Purchase Terminated.', exc_info=True)
+         return False
+
+      # Calculate the Signature of Hash
+      try:
+         signature = self.sign(contents_hash)
+         sign_str = base64.b64encode(signature).decode('utf-8')
+         self.send.update({'Signature': sign_str})
+      except:
+         log.error('Signing Error.', exc_info=True)
+         return False
+
+      # Send Fund to Address
+      try:
+         tx_hash = self.send_tx('b1_send_fund', address)
+      except:
+         log.error('Send Transaction Error.', exc_info=True)
+         return False
+
+      # Send Confirmation Request to Server
+      dmt = DMthread()
+      self.send.update({'tx_hash': tx_hash, 'public_key': self.pub_key})
+      send_dict = self.get_contents('b2_purchase_confirm', contents_only=False)
+      dmt.run(namespace.emit, 'purchase_confirm', send_dict)
+
+      self.dp_confirm.clear()
+      result = dmt.run(self.wait_tx_confirm, tx_hash, self.dp_confirm)
 
       return result
 
@@ -215,11 +263,11 @@ class DataMarketplaceClient():
       result = dmt.run(self.iota.send_transfer, [tx, tx_sig])
       return str(result['bundle'].transactions[0].hash)
    
-   def wait_tx_confirm(self, tx_hash):
+   def wait_tx_confirm(self, tx_hash, result):
       timeout = self.cfg['Data_Marketplace'].getint('wait_timeout')
       now = 0
       step = 0.1
-      while tx_hash not in self.dr_confirm and now < timeout:
+      while tx_hash not in result and now < timeout:
          time.sleep(step)
          now += step
 

@@ -11,7 +11,9 @@ if __name__ == '__main__':
    response = read_json('./data_marketplace/tx_templates/v1.0/s2_schema_response.json')
 #    result = client.registry('./_file/client/raw/hello_world.csv', response, 10, '2019-06-17')
 #    result = client.registry('./_file/client/raw/hello_world.csv', response, 10, '2019-06-18')
-   result = client.registry('./_file/client/raw/134217728.txt', response, 10, '2019-06-18')
-   log.info('Data Registraion Result: %s', result)
-   client.shutdown()
-   
+#    result = client.registry('./_file/client/raw/134217728.txt', response, 10, '2019-06-18')
+   result = client.purchase('SRDFSAHDPDKMMIUSELLLZ9VNTEZLGNQRTSVSTFVUFGNLZNNGHSOQWUATXJRPCR9VLQHEPOSYKR9YGNGLBYYVODSYEX', \
+                            'QGXWXKDJWIKYPHZNFRINYUOUHC9AUFBVHWAOQVPIDUPFJUKVLQHKAVGGRFPGIRUEFLQXFKSQLTGISXJFW', \
+                            10)
+   log.info('Data Purchase Result: %s', result)
+   client.sio.wait()
