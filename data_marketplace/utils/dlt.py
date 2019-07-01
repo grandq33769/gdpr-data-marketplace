@@ -1,6 +1,6 @@
 import time
 import json
-from iota import Iota
+from iota import Iota, BadApiResponse
 from data_marketplace.utils.log import logging
 from data_marketplace.utils.common import print_json
 
@@ -46,7 +46,7 @@ def get_tx_ctx_by_bundle(node, bundle_hash):
          bundle = node.get_bundles(txs[idx])['bundles'][0]
          msg, sig = _extract(bundle)
          status = True
-      except node.adapter.BadApiResponse:
+      except BadApiResponse:
          if idx < len(txs):
             idx += 1 
          else:

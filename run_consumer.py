@@ -15,7 +15,5 @@ if __name__ == '__main__':
 #    log.info('Data Purchase Result: %s', result)
 
 #    result = client.download('SVGSLYLZURZWFLKFLXDEHKXEXHUSEBTZHDMHXSCEGPTGABUBUKHUY9LZWGOLFCKKCG9H9WJDTTCPZ9999')
-   result = client.download('PHEUBPROBWQSIEDWPV9COQDQPAAVTFIH9TZTROJJTVCKCVRM9AEVWMHOSOOPEEDYHBWMTDFCISJD99999')
+   result = client.download('EFLCIDVYIDZOLDUAHFWEVVHDBKEEIXBPEGDYQKJQ9CEWTKTODRWMSCMCNGBHDCKC9POZCKKQEOZNZ9999')
    log.info('Data Download Result: %s', result)
-
-   client.sio.wait()
