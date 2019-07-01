@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_socketio import SocketIO
-from data_marketplace.utils.iota import connect_iota
+from data_marketplace.utils.dlt import connect_iota
 
 app = Flask(__name__, \
             instance_relative_config=True)

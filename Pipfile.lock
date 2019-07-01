@@ -272,17 +272,17 @@
         },
         "python-engineio": {
             "hashes": [
-                "sha256:9e4e7109d05d80ce5414f13b16f66725c2b5d574099fd43d37b024e7ea1c4354",
-                "sha256:d3315d3f972bd9bd32e0738d45801a912f522177ff75094762f31a8c341d1f41"
+                "sha256:32f2458431c2492c8ab90d49ef60a7230b11da9ee5a3dcaa7f5a6d0302d22e33",
+                "sha256:96bb808dd5933b540cfc65f8f67d66e0bcb1f28e73e878bc9bcf6de27e3f2835"
             ],
-            "version": "==3.8.1"
+            "version": "==3.8.2"
         },
         "python-socketio": {
             "hashes": [
-                "sha256:89a48591a8850c1f30d735f8e5a0294846da245a9b8940c39e1106e460c7a14e",
-                "sha256:c7ffeac3d81f2d8d63b3ec7ed1e2d4478cc84aa1da666c1934c19432f4b8c0f8"
+                "sha256:335bd0fab481d65edce4ab82c3bb5cac950afa843329ea7c38777cd56c8eba38",
+                "sha256:efec4844456791b7d702efefd543ed67a8e314ca45efb8f0bfca7ae18fdee60a"
             ],
-            "version": "==4.1.0"
+            "version": "==4.2.0"
         },
         "pytz": {
             "hashes": [
@@ -408,11 +408,10 @@
         },
         "more-itertools": {
             "hashes": [
-                "sha256:2112d2ca570bb7c3e53ea1a35cd5df42bb0fd10c45f0fb97178679c3c03d64c7",
-                "sha256:c3e4748ba1aad8dba30a4886b0b1a2004f9a863837b8654e7059eebf727afa5a"
+                "sha256:3ad685ff8512bf6dc5a8b82ebf73543999b657eded8c11803d9ba6b648986f4d",
+                "sha256:8bb43d1f51ecef60d81854af61a3a880555a14643691cc4b64a6ee269c78f09a"
             ],
-            "markers": "python_version > '2.7'",
-            "version": "==7.0.0"
+            "version": "==7.1.0"
         },
         "packaging": {
             "hashes": [
@@ -458,11 +457,11 @@
         },
         "pytest": {
             "hashes": [
-                "sha256:4a784f1d4f2ef198fe9b7aef793e9fa1a3b2f84e822d9b3a64a181293a572d45",
-                "sha256:926855726d8ae8371803f7b2e6ec0a69953d9c6311fa7c3b6c1b929ff92d27da"
+                "sha256:2878de8ae1c79a62c012da6186b88ff0562ea96ce29c4208d2a9b11d9f607df1",
+                "sha256:95b700cf21ed5b7e91bce7a6b5a573b2e3ef7b3643d00f681d8f9c4672f9fbdf"
             ],
             "index": "pypi",
-            "version": "==4.6.3"
+            "version": "==5.0.0"
         },
         "pytest-benchmark": {
             "hashes": [

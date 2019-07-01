@@ -8,7 +8,7 @@ from iota import TryteString, Address, Tag, ProposedTransaction
 from data_marketplace.crypto.hash import _hash
 from data_marketplace.utils.common import import_template, read_file_byte
 from data_marketplace.utils.log import logging
-from data_marketplace.utils.iota import connect_iota
+from data_marketplace.utils.dlt import connect_iota
 from data_marketplace.utils.thread import DMthread
 
 log = logging.getLogger('data_marketplace.client.api')
@@ -19,12 +19,12 @@ class DataMarketplaceClient():
       self.cfg = config
       self.sio = sio
       self.send = dict()
-      self.hash_algo = self.cfg['Data_Marketplace']['hash']
       self.dr_confirm = set()
       self.dp_confirm = set()
-      self.pub_key = read_file_byte(self.cfg['Asymmetric']['public_key'])
 
    def run(self):
+      self.hash_algo = self.cfg['Data_Marketplace']['hash']
+      self.pub_key = read_file_byte(self.cfg['Asymmetric']['public_key'])
       try:
          self.iota = connect_iota(eval(self.cfg['IOTA']['node']),
                                   self.cfg['IOTA']['seed'])
@@ -61,7 +61,7 @@ class DataMarketplaceClient():
       # Encryption of file
       try:
          encrypted, encrypted_hash, encrypted_path, data_hash = \
-                                                  self.encrypt(data_path)
+                                                  self.sym_encrypt(data_path)
          log.info('Encrypted Data store in : %s', encrypted_path)
          self.send.update({'Data_Hash':data_hash.hexdigest()})
          self.send.update({'Encrypted_Hash':encrypted_hash.hexdigest()})
@@ -154,10 +154,21 @@ class DataMarketplaceClient():
 
       return result
 
+   def download(self, tx_hash):
+      # TODO: Validate client to download the file
+      namespace = self.sio.namespace_handlers['/data-purchase']
+
+      dmt = DMthread()
+      self.send.update({'tx_hash': tx_hash, 'public_key': self.pub_key})
+      send_dict = self.get_contents('b3_download', contents_only=False)
+      dmt.run(namespace.emit, 'download', send_dict)
+
+      return False
+
    def validate(self, file_path, schema_json):
       return True
 
-   def encrypt(self, file_path):
+   def sym_encrypt(self, file_path):
       key = self.cfg['Symmetric']['key']
       encrypt_algo = self.cfg['Data_Marketplace']['symmetric']
       encrypt_func = im('data_marketplace.crypto.'+encrypt_algo).encrypt
@@ -179,8 +190,35 @@ class DataMarketplaceClient():
       encrypted_path = self._write_encrypted(encrypted, encrypted_hash)
       return encrypted, encrypted_hash, encrypted_path, digest
 
+   def sym_decrypt(self, key, contents):
+      dmt = DMthread()
+      decrypt_algo = self.cfg['Data_Marketplace']['symmetric']
+      decrypt_func = im('data_marketplace.crypto.'+decrypt_algo).decrypt
+      log.info("Decryption of file.\n\
+                Decrypt file size: %d,\n\
+                Decrypt algorithm: %s,\n\
+                Key length: %d"
+               , len(contents), decrypt_algo, len(key))
+
+      plain = dmt.run(decrypt_func, key, contents)
+      return plain
+
+   def asy_decrypt(self, encrypted):
+      dmt = DMthread()
+      priv_key_path = self.cfg['Asymmetric']['private_key']
+      decrypt_algo = self.cfg['Data_Marketplace']['asymmetric']
+      decrypt_func = im('data_marketplace.crypto.'+decrypt_algo).decrypt
+      log.info("Decryption of file.\n\
+                Decrypt file size: %d,\n\
+                Decrypted algorithm: %s,\n\
+                Private key path: %s"
+               , len(encrypted), decrypt_algo, priv_key_path)
+
+      decrypted = dmt.run(decrypt_func, priv_key_path, encrypted)
+      return decrypted
+
    def _write_encrypted(self, encrypted, digest):
-      path = self.cfg['Data_Marketplace']['encrypt_path']
+      path = os.path.join(self.cfg['Data_Marketplace']['storage_path'], 'encrypted')
       hexdigest = digest.hexdigest()
       log.info("Writing the encrypted object.\n\
                 Encrypted object: %s,\n\

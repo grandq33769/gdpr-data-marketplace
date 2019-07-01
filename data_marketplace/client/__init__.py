@@ -1,6 +1,7 @@
 import os
 import socketio
 from os.path import join
+from argparse import ArgumentParser
 from configparser import ConfigParser
 from data_marketplace.utils.log import logging
 from data_marketplace.client.app import DataMarketplaceClient

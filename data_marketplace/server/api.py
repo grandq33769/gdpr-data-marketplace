@@ -9,7 +9,7 @@ from data_marketplace.server import app, socketio
 from data_marketplace.crypto.hash import _hash, _validate
 from data_marketplace.utils.common import print_json, read_file_byte, write_file_byte, to_byte
 from data_marketplace.utils.thread import DMthread
-from data_marketplace.utils.iota import get_tx_ctx, wait_tx_confirmed
+from data_marketplace.utils.dlt import get_tx_ctx, get_tx_ctx_by_bundle, wait_tx_confirmed
 from data_marketplace.utils.log import logging
 
 log = logging.getLogger('data_marketplace.server.api')
@@ -77,6 +77,7 @@ class Data_Registration(Namespace):
                 {'message': 'Successful Confirmation',
                  'tx_hash': tx_hash})
       
+# TODO: Should rename as `Data_Trading`
 class Data_Purchase(Namespace):
    def __init__(self, namespace):
       Namespace.__init__(self, namespace)
@@ -129,11 +130,45 @@ class Data_Purchase(Namespace):
       t = Thread(target=wait_tx_confirmed,
                  args=(app.iota, tx_hash, app.config['CHECK_TIME'], notify))
       t.start()
+   
+   def on_download(self, data):
+      # TODO: Validate Client Identity
+      tx_hash = data['tx_hash']
+      log.info('Recevied Data Download - Tx hash: %s', tx_hash)
+
+      # Get Transaction Contents
+      dmt = DMthread()
+      log.info('Get Purchase Transaction ...')
+      msg, sig = dmt.run(get_tx_ctx, app.iota, tx_hash)
+      log.info('Transaction Contents: %s\n'\
+               'Signature: %s\n', print_json(msg), print_json(sig))
+
+      log.info('Get Target Contents from Target Bundle ...')
+      bundle_hash = msg['Contents']['Target_Bundle']
+      log.info('Target Hash: %s\n', bundle_hash)
+      msg, sig = dmt.run(get_tx_ctx_by_bundle, app.iota, bundle_hash)
+      log.info('Transaction Contents: %s\n'\
+               'Signature: %s\n', print_json(msg), print_json(sig))
+
+      storage_path = os.path.join(app.base_path, app.config['STORAGE_PATH'])
+      key_name = msg['Contents']['Owner'] + '.bin'
+      key_path = os.path.join(storage_path, 'key', key_name)
+      with open(key_path, 'rb') as f:
+         key = f.read()
+         log.info('Encrypted AES key: %s', key)
+      
+      file_name = msg['Contents']['Encrypted_Hash'] + '.bin'
+      file_path = os.path.join(storage_path, 'encrypted', file_name)
+      with open(file_path, 'rb') as f:
+         encrypted = f.read()
+      
+      self.emit('download_response', {'bundle_hash': bundle_hash,
+                                      'file': encrypted,
+                                      'key': key})
 
    def _notify(self, tx_hash):
       self.emit('confirmed', {'message': 'Confirmed Tx',
                               'tx_hash': tx_hash})
-
 
 def _write_tx_confirm(base_path, response, msg):
    file_name = msg['Contents']['Encrypted_Hash'] + '.bin'

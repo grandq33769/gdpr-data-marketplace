@@ -21,12 +21,12 @@ def decrypt(key, msg):
 
 
 if __name__ == "__main__":
-   key = '12345678912345678912345678912345'
+   key = b'12345678912345678912345678912345'
    msg = encrypt(key, 'HelloWorld')
    print('Encrypted', msg)
    plain = decrypt(key, msg)
    print('Decrypted', plain.decode('utf-8'))
-   with open('20190611-11.log', 'rb') as f:
+   with open('./_file/client/raw/512.txt', 'rb') as f:
       content = f.read()
    
    dmthread = DMthread()
