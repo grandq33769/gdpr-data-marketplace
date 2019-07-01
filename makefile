@@ -26,5 +26,7 @@ rerun-server:
 	make run-server
 run-test:
 	sudo docker run -it -d --name=data_marketplace -v $(cd):/root/data_marketplace --entrypoint "python" $(image) /root/data_marketplace/run_pytest.py
+run-bash:
+	sudo docker run -it -d --name=data_marketplace -v $(cd):/root/data_marketplace $(image) bash
 watch-docker-logs:
 	sudo docker logs -f $(container)
