@@ -1,6 +1,6 @@
 from itertools import product
 
-rounds = 1
+rounds = 5
 size = [s for s in range(0,30,5)]
 size.append(26)
 size.append(27)
