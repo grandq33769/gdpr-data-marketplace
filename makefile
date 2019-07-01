@@ -3,10 +3,14 @@ container = $(shell sudo docker ps -aq -f name="data_marketplace")
 cd := $(shell pwd)
 test: 
 	pipenv run python run_pytest.py
+clean:
+	make remove-container
+	make remove-test
 generate_test:
 	pipenv run python ./tests/generate_test.py
 remove-test:
-	rm tests/test_aes*
+	sudo rm tests/test_aes*
+	sudo rm .benchmarks/*
 build-image:
 	pipenv lock -r > requirements.txt  && pipenv lock -r --dev >> requirements.txt
 	sudo docker build -t data_marketplace:latest .
