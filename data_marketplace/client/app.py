@@ -163,7 +163,10 @@ class DataMarketplaceClient():
       send_dict = self.get_contents('b3_download', contents_only=False)
       dmt.run(namespace.emit, 'download', send_dict)
 
-      return False
+      self.dp_confirm.clear()
+      result = dmt.run(self.wait_tx_confirm, tx_hash, self.dp_confirm)
+      
+      return result
 
    def validate(self, file_path, schema_json):
       return True

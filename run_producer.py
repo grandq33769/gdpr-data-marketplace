@@ -12,7 +12,7 @@ if __name__ == '__main__':
    client.run()
 
    response = read_json('./data_marketplace/tx_templates/v1.0/s2_schema_response.json')
-   result = client.registry('./_file/client/raw/134217728.txt', response, 10, '2019-07-01')
+   result = client.registry('./_file/client/raw/1024.txt', response, 10, '2019-07-02')
 
    log.info('Data Registration Result: %s', result)
    client.shutdown()

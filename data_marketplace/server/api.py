@@ -162,7 +162,8 @@ class Data_Purchase(Namespace):
       with open(file_path, 'rb') as f:
          encrypted = f.read()
       
-      self.emit('download_response', {'bundle_hash': bundle_hash,
+      self.emit('download_response', {'tx_hash': tx_hash,
+                                      'bundle_hash': bundle_hash,
                                       'file': encrypted,
                                       'key': key})
 

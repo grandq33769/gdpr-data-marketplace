@@ -79,6 +79,7 @@ class Data_Purchase(ClientNamespace):
       file_path = join(storage_path, 'received', file_name)
       with open(file_path, 'wb') as f:
          f.write(plain)
+      self.response.add(msg['tx_hash'])
 
 client.sio.register_namespace(Data_Resgistration('/data-registration', client.dr_confirm))
 client.sio.register_namespace(Data_Purchase('/data-purchase', client.dp_confirm))
