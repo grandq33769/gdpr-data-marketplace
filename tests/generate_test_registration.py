@@ -17,7 +17,7 @@ products = list(product(sym_keys, asy_len, size))
 
 public_key = './instance/client/public-{}.pem'
 private_key = './instance/client/private-{}.pem'
-file_path = './_file/producer/raw{}.txt'
+file_path = './_file/producer/raw/{}.txt'
 test_path = './tests/test_aes{sym_len}_rsa{rsa_len}_s{size}.py'
 all_test = []
 
