@@ -9,7 +9,7 @@ clean:
 generate_test:
 	pipenv run python ./tests/generate_test.py
 remove-test:
-	sudo rm tests/test_aes*
+	ls tests | grep '^[test].*.py' | xargs -I{} rm "tests/{}"
 	sudo rm .benchmarks/*
 build-image:
 	pipenv lock -r > requirements.txt  && pipenv lock -r --dev >> requirements.txt
@@ -31,6 +31,6 @@ rerun-server:
 run-test:
 	sudo docker run -it -d --name=data_marketplace -v $(cd):/root/data_marketplace --entrypoint "python" $(image) /root/data_marketplace/run_pytest.py
 run-bash:
-	sudo docker run -it -d --name=data_marketplace -v $(cd):/root/data_marketplace $(image) bash
+	sudo docker run -it -d --name=data_marketplace -v $(cd):/root/data_marketplace $(image)
 watch-docker-logs:
 	sudo docker logs -f $(container)
