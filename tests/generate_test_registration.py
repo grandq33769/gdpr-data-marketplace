@@ -1,6 +1,6 @@
 from itertools import product
 
-rounds = 100
+rounds = 5
 sym_keys = (
    "1e7dor4xpip9isxo",\
    "m2x0ihmzuw3coo91jwbtmqyiaiply3iv", \
