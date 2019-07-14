@@ -1,0 +1,10 @@
+from data_marketplace.client.api import client
+
+def test_data_download_s{size}(benchmark):
+   client.read_config('./instance/client/consumer/consumer.ini')
+   params = (
+       '{tx_hash}', \
+   )
+   client.run()
+   benchmark.pedantic(client.download, args=params, iterations=1, rounds={rounds})
+   client.shutdown()

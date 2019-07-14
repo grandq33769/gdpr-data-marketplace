@@ -1,0 +1,12 @@
+from data_marketplace.client.api import client
+
+def test_data_purchase_s{size}(benchmark):
+   client.read_config('./instance/client/consumer/consumer.ini')
+   params = (
+       'SRDFSAHDPDKMMIUSELLLZ9VNTEZLGNQRTSVSTFVUFGNLZNNGHSOQWUATXJRPCR9VLQHEPOSYKR9YGNGLBYYVODSYEX', \
+       '{tx_hash}', \
+       10
+   )
+   client.run()
+   benchmark.pedantic(client.purchase, args=params, iterations=1, rounds={rounds})
+   client.shutdown()

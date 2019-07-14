@@ -1,0 +1,15 @@
+{
+    "Appication Name": "NetDB_Data_Marketplace",
+    "Data Marketplace Version": "v1.0",
+    "Type": "Certificate",
+    "Contents": {
+        "Owner": "",
+        "Be_Authorized": "",
+        "Expired_Date": "",
+        "Data_Hash": "",
+        "Encrypted_Hash": "",
+        "Data_Schema_Hash": "",
+        "Price": ""
+    },
+    "Contents_Hash": ""
+}
